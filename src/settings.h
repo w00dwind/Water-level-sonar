@@ -7,9 +7,9 @@ WidgetRTC rtc;
 #define FILTER_COEF 0.5
 #define DEBUG 1
 // Auto filling tank
-#define FILL_AUTO True
+#define FILL_AUTO 1
 // threshold for safety power off valve in seconds
-unsigned long valve_timer_thresh = 30;
+unsigned long valve_timer_thresh = 60;
 bool valve_prev = false;
 unsigned long valve_timer;
 // сонар

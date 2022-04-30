@@ -109,20 +109,20 @@ void check_level()
   // int timeMins = (sec % 3600ul) / 60ul;
 
 
-#if (FILL_AUTO == True)
-if ((perc <= 20) && !valve_prev) {
+#if (FILL_AUTO == 1)
+if (perc <= 20 && !valve_prev) {
     digitalWrite(VALVE_PIN, 1);
     valve_prev = valve_state;
-#if (DEBUG == 1)
-    printOutput(">>>>>>>>> FILL_AUTO_START >> " + String(valve_prev));
-#endif
+// #if (DEBUG == 1)
+    printOutput(">>> FILL_AUTO_START >> VALVE_STATE - " + String(valve_prev));
+// #endif
 }
-else if ((perc >= 100) && valve_prev) {
+else if (perc >= 100 && valve_prev) {
     digitalWrite(VALVE_PIN, 0);
     valve_prev = 0;
-#if (DEBUG == 1)
-    printOutput(">>>>>>>>> FILL_AUTO_STOP >> " + String(valve_prev));
-#endif
+// #if (DEBUG)
+    printOutput(">>> FILL_AUTO_STOP >> VALVE_STATE - " + String(valve_prev));
+// #endif
     }
 
 #endif
@@ -137,13 +137,13 @@ void valve_safety()
     valve_timer = millis();
     prev_state_safety = current_state;
 
-    printOutput(">>>>>>>>> Safety_timer_start >> " + String(valve_timer / 1000));
+    printOutput(">>> Safety timer start ");
   }
   else if ((millis() - valve_timer) >= (valve_timer_thresh * 1000) && prev_state_safety) // && prev_state_safety ?
   {
     digitalWrite(VALVE_PIN, 0);
     prev_state_safety = false;
-    printOutput(">>>>>>>>>> Safety_timer_stop >> " + String(((millis() - valve_timer) / 1000)));
+    printOutput(">>> Valve closed, time: " + String(((millis() - valve_timer) / 1000)) + String(" sec."));
   }
 
 }
