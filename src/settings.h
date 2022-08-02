@@ -5,13 +5,22 @@ WidgetRTC rtc;
 // Фильтр бегущее среднее
 // #define FILTER_STEP 10000
 #define FILTER_COEF 0.5
-#define DEBUG 1
-// Auto filling tank
+#define DEBUG 0
+// Tank auto filling
 #define FILL_AUTO 1
+
+int val; // raw data from Sonar
+float val_f; // filtered data from Sonar
+float dist_3[3] = {0.0, 0.0, 0.0};   // массив для хранения трёх последних измерений
+float middle, dist;
+byte i;
+
 // threshold for safety power off valve in seconds
 unsigned long valve_timer_thresh = 60;
-bool valve_prev = false;
 unsigned long valve_timer;
+bool valve_prev = false; // default value to boot
+
+
 // сонар
 #define SONAR_ECHO D6
 #define SONAR_TRIG D5
