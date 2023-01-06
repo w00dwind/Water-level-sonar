@@ -11,16 +11,12 @@
 #include <TimeLib.h>
 #include <WidgetRTC.h>
 #include "uptime.h"
-
 #include "secret.h"
 #include "settings.h"
 #include "functions.h"
 
 
 NewPing sonar(SONAR_TRIG, SONAR_ECHO, MAX_DISTANCE); // Настройка пинов и максимального расстояния.
-
-
-
 
 
 
@@ -43,11 +39,6 @@ BLYNK_WRITE(vPIN_VALVE) {
   digitalWrite(VALVE_PIN, virtual_valve_state);
 }
 
-void checkPhysicalButton()
-{
-
-      Blynk.virtualWrite(vPIN_VALVE, digitalRead(VALVE_PIN));
-    }
 
 
 void check_level()
@@ -55,24 +46,7 @@ void check_level()
   float val = sonar.ping() / 57.5;
 
 
-
-  /// Медианный фильтр + бегущее срднее ///
-  // if (i > 1) i = 0;
-  // else i++;
-
-  // dist_3[i] = (float)val;                 // получить расстояние в текущую ячейку массива
-
-  // dist = middle_of_3(dist_3[0], dist_3[1], dist_3[2]);    // фильтровать медианным фильтром из 3ёх последних измерений
-
-  // delta = abs(dist_filtered - dist);                      // расчёт изменения с предыдущим
-  // if (delta > 1) k = 0.7;                                 // если большое - резкий коэффициент
-  // else k = 0.1;                                           // если маленькое - плавный коэффициент
-
-  // dist_filtered = dist * k + dist_filtered * (1 - k);     // бегущее среднее после медианного фильтра
-
-  ///
-  // Только бегущее среднее
-
+  // Фильтр
   val_f = val * FILTER_COEF + val_f * (1 - FILTER_COEF);
 
 
@@ -97,13 +71,13 @@ void check_level()
 if (perc <= 20 && !valve_prev) {
     digitalWrite(VALVE_PIN, 1);
     valve_prev = true;
-    printOutput(">>> FILL_AUTO_START >> VALVE_STATE - " + String(valve_prev));
+    printOutput(">>> FILL_AUTO_START >> VALVE_STATE - " + String(valve_state));
 
 }
 else if (perc >= 100 && valve_prev) {
     digitalWrite(VALVE_PIN, 0);
     valve_prev = false;
-    printOutput(">>> FILL_AUTO_STOP >> VALVE_STATE - " + String(valve_prev));
+    printOutput(">>> FILL_AUTO_STOP >> VALVE_STATE - " + String(valve_state));
 
     }
 
@@ -116,16 +90,20 @@ void valve_safety()
 
   if (current_state && !prev_state_safety)
   {
-    valve_timer = millis();
+    // valve_timer = millis();
     prev_state_safety = true;
 
     printOutput(">>> Safety timer start ");
   }
-  else if ((millis() - valve_timer) >= (valve_timer_thresh * 1000) && prev_state_safety) //
+  else if (prev_state_safety && current_state
+) //
   {
     digitalWrite(VALVE_PIN, 0);
     prev_state_safety = false;
-    printOutput(">>> Valve closed, time: " + String(((millis() - valve_timer) / 1000)) + String(" sec."));
+    printOutput(">>> Valve closed, by safety timer.");
+  }
+  else {
+     Blynk.virtualWrite(D7, digitalRead(VALVE_PIN));
   }
 
 }
@@ -134,28 +112,20 @@ void valve_safety()
 
 void setup() {
   pinMode(VALVE_PIN, OUTPUT);
-  Serial.begin(9600);
-  Blynk.begin(auth, ssid, pass);
-  Blynk.syncVirtual(vPIN_MAX_LEVEL, vPIN_MIN_LEVEL, vPIN_SEND_TERMINAL);
-  // WiFi.mode(WIFI_STA); // режим клиента
-  // WiFi.hostname(esp_hostname); //
-  // WiFi.begin(ssid, pass);
-  //
-  // while (WiFi.waitForConnectResult() != WL_CONNECTED) {
-  //   Serial.println("Connection Failed! Rebooting...");
-  //   delay(5000);
-  //   ESP.restart();
-  // }
   ArduinoOTA.onError([](ota_error_t error) {
     ESP.restart();
   });
   ArduinoOTA.setHostname(esp_hostname); // !!!!
   ArduinoOTA.begin();
+  Serial.begin(9600);
+  Blynk.begin(auth, ssid, pass, SERVER, 8080);
+  Blynk.syncVirtual(vPIN_MAX_LEVEL, vPIN_MIN_LEVEL, vPIN_SEND_TERMINAL);
+
 
 
  // timer
- timer.setInterval(1000L, checkPhysicalButton);
- timer.setInterval(30000L, valve_safety);
+ // timer.setInterval(1000L, checkPhysicalButton);
+ timer.setInterval(valve_timer_thresh, valve_safety);
   timer.setInterval(2000L, check_level);
   timer.setInterval(30000L, sendUptime);
   timerDate = timer.setInterval(5000, []() {
@@ -166,23 +136,8 @@ void setup() {
 }
 
 void loop() {
+  ArduinoOTA.handle();
   timer.run();
   Blynk.run();
-  ArduinoOTA.handle();
-}
 
-// медианный фильтр из 3ёх значений
-float middle_of_3(float a, float b, float c) {
-  if ((a <= b) && (a <= c)) {
-    middle = (b <= c) ? b : c;
-  }
-  else {
-    if ((b <= a) && (b <= c)) {
-      middle = (a <= c) ? a : c;
-    }
-    else {
-      middle = (a <= b) ? a : b;
-    }
-  }
-  return middle;
 }

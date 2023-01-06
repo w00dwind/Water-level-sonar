@@ -8,17 +8,23 @@ WidgetRTC rtc;
 #define DEBUG 0
 // Tank auto filling
 #define FILL_AUTO 1
+#define SERVER IPAddress(88,210,13,30)
 
 int val; // raw data from Sonar
 float val_f; // filtered data from Sonar
 float dist_3[3] = {0.0, 0.0, 0.0};   // массив для хранения трёх последних измерений
 float middle, dist;
-byte i;
+// byte i;
 
 // threshold for safety power off valve in seconds
-unsigned long valve_timer_thresh = 60;
+unsigned long valve_timer_thresh = 60 * 1000;
 unsigned long valve_timer;
 bool valve_prev = false; // default value to boot
+bool prev_state_safety = false;
+int minLevel;
+int maxLevel;
+bool sendTerminal;
+bool virtual_valve_state;
 
 
 // сонар
@@ -29,11 +35,6 @@ bool valve_prev = false; // default value to boot
 
 
 
-int minLevel;
-int maxLevel;
-bool sendTerminal;
-bool virtual_valve_state;
-bool prev_state_safety = false;
 
 
 // Sonar settings
