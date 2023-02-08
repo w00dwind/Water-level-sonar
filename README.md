@@ -1,7 +1,8 @@
 # Coffee machine fill auto
 
-Blynk app based project using nodemcu and HC-SR04 sensor. After setting min and max level in blynk app, coffee machine water tank will be filling automatically. Some important information will be showed in blynk app.
+<img src="screenshot.PNG" width=30% height=30%></img>
 
+Blynk app based project using nodemcu and HC-SR04 sensor. After setting min and max level in blynk app, coffee machine water tank will be filling automatically. Some important information will be showed in blynk app.
 Nodemcu via blynk manage solenoid valve, which connect to filtered water pipe.
 
 # Hardware:
